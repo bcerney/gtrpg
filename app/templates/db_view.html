@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+        <h1>gtRPG - Database</h1>
+
+        <div class="row">
+            <div class="col-6" id="addCategoryForm">
+                <h2>Add Category</h2>
+                <form action="" method="post" novalidate>
+                    {{ add_category_form.hidden_tag() }}
+                    <p>
+                        {{ add_category_form.title.label }}<br>
+                        {{ add_category_form.title }}<br>
+                        {% for error in add_category_form.title.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ add_category_form.description.label }}<br>
+                        {{ add_category_form.description }}<br>
+                        {% for error in add_category_form.description.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+                    </p>
+                    <p>{{ add_category_form.add_category_submit() }}</p>
+                </form>
+            </div>
+
+            <div class="col-6" id="addTaskForm">
+                <h2>Add Task</h2>
+                <form action="" method="post" novalidate>
+                    {{ add_task_form.hidden_tag() }}
+                    <p>
+                        {{ add_task_form.title.label }}<br>
+                        {{ add_task_form.title }}<br>
+                        {% for error in add_task_form.title.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ add_task_form.description.label }}<br>
+                        {{ add_task_form.description }}<br>
+                        {% for error in add_task_form.description.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ add_task_form.category_id.label }}<br>
+                        {{ add_task_form.category_id }}<br>
+                        {% for error in add_task_form.category_id.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+                    </p>
+                    <p>{{ add_task_form.add_task_submit() }}</p>
+                </form>
+            </div>
+        </div>
+
+            
+
+        <div class="row" id ="usersTable">
+            <div class="col-12">
+                <h2>Users</h2>
+                <table class="table table-dark table-bordered table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">id</th>
+                            <th scope="col">username</th>
+                            <th scope="col">email</th>
+                            <th scope="col">password_hash</th>
+                            <th scope="col">total_points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <th scope="row">{{user.id}}</th>
+                                <td>{{user.username}}</td>
+                                <td>{{user.email}}</td>
+                                <td>{{user.password_hash}}</td>
+                                <td>{{user.total_points}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row" id ="categoriesTable">
+            <div class="col-12">
+                <h2>Categories</h2>
+                <table class="table table-dark table-bordered table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">id</th>
+                            <th scope="col">title</th>
+                            <th scope="col">description</th>
+                            <th scope="col">timestamp</th>
+                            <th scope="col">tasks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                            <tr>
+                                <th scope="row">{{category.id}}</th>
+                                <td>{{category.title}}</td>
+                                <td>{{category.description}}</td>
+                                <td>{{category.timestamp}}</td>
+                                <td>{{category.tasks}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

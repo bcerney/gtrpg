@@ -1,0 +1,19 @@
+docker run -d -p 5000:5000 gtrpg && docker logs -f gtrpg 
+
+docker run -it --net host gtrpg:latest bash
+
+docker build -t gtrpg:latest .
+
+
+
+bgdg = User(username='BGDG', email='brianecerney@gmail.com', total_points=0)
+db.session.add(bgdg)
+db.session.commit()
+
+frt = Category(title='Music Theory', description='Applied theory, flesh out vs. Fretboard Mastery')
+db.session.add(frt)
+db.session.commit()
+
+task_1 = Task(title='Find Fingerstyle Blues Songs', description='Find Fingerstyle Blues Songs', category=cat)
+db.session.add(task_1)
+db.session.commit()

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>gtRPG - Session</h1>
+
+    <div class="row" id="sessionBlocks">
+        {% for block in session.blocks %}
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">
+                    Block {{ loop.index }} | {{ block.category.title }} | {{ block.len_in_min }} min.
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ block.task.title }}</h5>
+                    <p class="card-text">{{ block.task.description }}</p>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+    
+{% endblock %}

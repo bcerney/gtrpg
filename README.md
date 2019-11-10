@@ -1,3 +1,0 @@
-# gtrpg
-
-gtRPG
