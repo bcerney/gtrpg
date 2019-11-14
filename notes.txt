@@ -17,3 +17,17 @@ db.session.commit()
 task_1 = Task(title='Find Fingerstyle Blues Songs', description='Find Fingerstyle Blues Songs', category=cat)
 db.session.add(task_1)
 db.session.commit()
+
+
+# Mock email handler to console
+python -m smtpd -n -c DebuggingServer localhost:8025
+
+export MAIL_SERVER=smtp.googlemail.com
+export MAIL_PORT=587
+export MAIL_USE_TLS=1
+export MAIL_USERNAME=<your-gmail-username>
+export MAIL_PASSWORD=<your-gmail-password>
+
+
+pip freeze > requirements.txt
+pip install -r requirements.txt
