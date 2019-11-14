@@ -1,13 +1,7 @@
 import random
 import sys
+
 from app.block import Block
-
-
-CATEGORIES = ["Acoustic", "Electric", "Guitar Gods", "Improvisation",
-    "Fingerstyle", "Slide", "Pyrotechnics", "Songwriting",
-    "Open Mic", "Band Performance", "Technical Mastery", "Music Theory"]
-
-BGDG_CATEGORIES = []
 
 
 class Session():
