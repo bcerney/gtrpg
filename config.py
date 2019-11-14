@@ -1,5 +1,9 @@
 import os
+from dotenv import load_dotenv
+
 basedir = os.path.abspath(os.path.dirname(__file__))
+# TODO: implement .env file
+# load_dotenv(os.path.join(basedir, '.env'))
 
 class Config(object):
     # TODO: confirm key usage
