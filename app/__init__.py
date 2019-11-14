@@ -24,7 +24,10 @@ mail = Mail(app)
 
 bootstrap = Bootstrap(app)
 
-from app import errors, models, routes
+from app.errors import bp as errors_bp
+app.register_blueprint(errors_bp)
+
+from app import models, routes
 
 if not app.debug:
     # Email error logging
