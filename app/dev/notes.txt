@@ -62,3 +62,6 @@ Setting LOG_TO_STDOUT and restarting flask-microblog... done, v4
 LOG_TO_STDOUT: 1
 
 git push heroku <master or branch you're working on>
+
+
+heroku open

@@ -1,1 +1,1 @@
-web: flask db upgrade; gunicorn gtrpg:app
+web: flask db upgrade; gunicorn py-flask-gtrpg:app
