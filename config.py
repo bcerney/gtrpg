@@ -2,20 +2,21 @@ import os
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-# TODO: implement .env file
-# load_dotenv(os.path.join(basedir, '.env'))
+SQLITE_DB_PATH = 'sqlite:///' + os.path.join(basedir, 'app.db')
+DOCKER_PSQL_PATH = 'postgres+psycopg2://postgres:docker@192.168.122.1:5432'
+load_dotenv(os.path.join(basedir, '.env'))
 
 class Config(object):
-    # TODO: confirm key usage
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
+    SECRET_KEY = os.environ.get('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'app.db')
+        SQLITE_DB_PATH
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
 
     # Email
-    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'localhost'
-    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 8025)
+    # MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'localhost'
+    # MAIL_PORT = int(os.environ.get('MAIL_PORT') or 8025)
     # MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
     # MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     # MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    ADMINS = ['brianecerney@gmail.com']
+    # ADMINS = os.environ.get('ADMINS') or ['brianecerney@gmail.com']

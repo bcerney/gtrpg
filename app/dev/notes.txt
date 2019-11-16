@@ -31,3 +31,34 @@ export MAIL_PASSWORD=<your-gmail-password>
 
 pip freeze > requirements.txt
 pip install -r requirements.txt
+
+https://hackernoon.com/dont-install-postgres-docker-pull-postgres-bee20e200198
+mkdir -p $HOME/docker/volumes/postgres
+docker run --rm   --name pg-docker -e POSTGRES_PASSWORD=docker -d -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data  postgres
+psql -h localhost -U postgres -d postgres
+
+heroku login
+heroku apps:create gtrpg
+
+https://gtrpg.herokuapp.com/
+
+(venv) bgdg@bgdg-ThinkPad-T530:~/repos/py-flask-gtrpg$ heroku config
+=== gtrpg Config Vars
+DATABASE_URL: ...
+
+heroku addons:add heroku-postgresql:hobby-dev
+Creating heroku-postgresql:hobby-dev on flask-microblog... free
+Database has been created and is available
+ ! This database is empty. If upgrading, you can transfer
+ ! data from another database with pg:copy
+Created postgresql-parallel-56076 as DATABASE_URL
+Use heroku addons:docs heroku-postgresql to view documentation
+
+postgresql-curly-79413
+
+heroku config:set FLASK_APP=py-flask-gtrpg.py
+heroku config:set LOG_TO_STDOUT=1
+Setting LOG_TO_STDOUT and restarting flask-microblog... done, v4
+LOG_TO_STDOUT: 1
+
+git push heroku <master or branch you're working on>
