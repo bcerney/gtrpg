@@ -12,6 +12,21 @@ followers = db.Table('followers',
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 )
 
+# user_category_points = db.Table('pointstest',
+#     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+#     db.Column('user_category_points', db.Integer, db.ForeignKey('user.id')),
+#     db.Column('category_id', db.Integer, db.ForeignKey('category.id'))
+# )
+
+class Test(db.Model):
+    user_id = db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    category_id = db.Column('category_id', db.Integer, db.ForeignKey('category.id'), primary_key=True)
+    user_category_points = db.Column('user_category_points', db.Integer)
+
+    def __repr__(self):
+        return f'<Test: user_id={self.user_id}, category_id={self.category_id}, user_category_points={self.user_category_points}>'
+
+
 class User(UserMixin, db.Model):
     # TODO: add timestamp, probably as Mixin?
     id = db.Column(db.Integer, primary_key=True)
@@ -22,6 +37,8 @@ class User(UserMixin, db.Model):
     total_points = db.Column(db.Integer, index=True)
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    points_per_category = db.relationship('Test', lazy=True)
+
     followed = db.relationship(
         'User', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
@@ -61,7 +78,7 @@ class User(UserMixin, db.Model):
             followers.c.followed_id == user.id).count() > 0
 
     def __repr__(self):
-        return f'<User: id={self.id}, username={self.username}, email={self.email}, total_points={self.total_points}>'
+        return f'<User: id={self.id}, username={self.username}, email={self.email}, total_points={self.total_points}, points_per_category={self.points_per_category}>'
 
 @login.user_loader
 def load_user(id):
