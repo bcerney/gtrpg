@@ -4,6 +4,7 @@ docker run -it --net host gtrpg:latest bash
 
 docker build -t gtrpg:latest .
 
+export FLASK_DEBUG=1
 
 
 bgdg = User(username='BGDG', email='brianecerney@gmail.com', total_points=0)
@@ -13,6 +14,8 @@ db.session.commit()
 frt = Category(title='Music Theory', description='Applied theory, flesh out vs. Fretboard Mastery')
 db.session.add(frt)
 db.session.commit()
+
+ucp = Test(user_id=1, category_id=1, user_category_points=0)
 
 task_1 = Task(title='Find Fingerstyle Blues Songs', description='Find Fingerstyle Blues Songs', category=cat)
 db.session.add(task_1)

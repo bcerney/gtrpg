@@ -12,19 +12,25 @@ from app.models import User
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
+    flash(f'Entered login...')
     if current_user.is_authenticated:
+        flash(f'{current_user} is authenticated')
         return redirect(url_for('main.index'))
     login_form = LoginForm()
     if login_form.validate_on_submit():
+        flash(f'Entered login_form_submit...')
         user = User.query.filter_by(username=login_form.username.data).first()
+        flash({f'{user}'})
         if user is None or not user.check_password(login_form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('auth.login'))
         login_user(user, remember=login_form.remember_me.data)
-        next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('main.index')
-        return redirect(next_page)
+        # next_page = request.args.get('next')
+        # if not next_page or url_parse(next_page).netloc != '':
+        #     next_page = url_for('main.index')
+        flash(f'user logged in')
+        flash(f'{current_user}')
+        return redirect(url_for('main.index'))
     return render_template('auth/login.html', title='Sign In', form=login_form)
 
 
@@ -40,11 +46,18 @@ def register():
         return redirect(url_for('main.index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
+        user = User(username=form.username.data,
+                    email=form.email.data,
+                    level=1,
+                    total_xp=0,
+                    xp_to_next_level=5,
+                    level_up_xp_modifier=5)
         user.set_password(form.password.data)
+
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
+
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', title='Register', form=form)
 

@@ -41,3 +41,10 @@ class EditProfileForm(FlaskForm):
             user = User.query.filter_by(username=self.username.data).first()
             if user is not None:
                 raise ValidationError('Please use a different username.')
+
+class AddUserCategoryForm(FlaskForm):
+    category_id = SelectField(u'Category', coerce=int)
+    add_user_category_submit = SubmitField('Add Category')
+
+    def __repr__(self):
+        return f'<AddUserCategoryForm: category_id={self.category_id}'

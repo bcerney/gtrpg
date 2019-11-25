@@ -4,18 +4,90 @@
     <table>
         <tr valign="top">
             <td>
-                <h1>User: {{ user.username }}</h1>
+                <h1>{{ user.username }}</h1>
+                <h2> Level: {{ user.level }}</h2>
+                <h3> Total XP: {{ user.total_xp }}</h3>
+                <h3> XP to Next Level: {{ user.xp_to_next_level }}</h3>
                 {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
                 {% if user.last_seen %}<p>Last seen on: {{ user.last_seen }}</p>{% endif %}
                 {% if user == current_user %}
                 <p><a href="{{ url_for('main.edit_profile') }}">Edit your profile</a></p>
-                {% elif not current_user.is_following(user) %}
+                <!-- {% elif not current_user.is_following(user) %}
                 <p><a href="{{ url_for('main.follow', username=user.username) }}">Follow</a></p>
                 {% else %}
-                <p><a href="{{ url_for('main.unfollow', username=user.username) }}">Unfollow</a></p>
+                <p><a href="{{ url_for('main.unfollow', username=user.username) }}">Unfollow</a></p> -->
                 {% endif %}
             </td>
         </tr>
     </table>
     <hr>
+
+    <div class="row" id ="categoriesTable">
+        <div class="col-12">
+            <h2>Categories</h2>
+            <table class="table table-dark table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">id</th>
+                        <th scope="col">title</th>
+                        <th scope="col">description</th>
+                        <th scope="col">timestamp</th>
+                        <th scope="col">tasks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in user_categories %}
+                        <tr>
+                            <th scope="row">{{category.id}}</th>
+                            <td>{{category.title}}</td>
+                            <td>{{category.description}}</td>
+                            <td>{{category.timestamp}}</td>
+                        </tr>
+                        {% for task in category.tasks %}
+                            <tr>
+                                <th scope="row">{{task.id}}</th>
+                                <td>{{task.title}}</td>
+                                <td>{{task.description}}</td>
+                                <td>{{task.timestamp}}</td>
+                                <td>{{task.category_id}}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row" id ="tasksTable">
+        <div class="col-12">
+            <h2>Tasks</h2>
+            <table class="table table-dark table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">id</th>
+                        <th scope="col">category_id</th>
+                        <th scope="col">timestamp</th>
+                        <th scope="col">title</th>
+                        <th scope="col">description</th>
+                        <th scope="col">for_x_minutes</th>
+                        <th scope="col">xp</th>                      
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in user_tasks %}
+                        <tr>
+                            <th scope="row">{{task.id}}</th>
+                            <td>{{task.category_id}}</td>
+                            <td>{{task.timestamp}}</td>
+                            <td>{{task.title}}</td>
+                            <td>{{task.description}}</td>
+                            <td>{{task.for_x_minutes}}</td>
+                            <td>{{task.xp}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 {% endblock %}

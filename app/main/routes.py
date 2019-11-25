@@ -7,9 +7,9 @@ from werkzeug.urls import url_parse
 
 from app import db
 from app.main import bp
-from app.main.forms import (AddCategoryForm, AddTaskForm, EditProfileForm,
+from app.main.forms import (AddCategoryForm, AddTaskForm, AddUserCategoryForm, EditProfileForm,
                             SessionForm)
-from app.models import Category, Task, User
+from app.models import Category, Task, User, UserCategoryXp
 from app.session import Session
 
 
@@ -23,30 +23,80 @@ def before_request():
 @bp.route('/')
 @bp.route('/index')
 @login_required
-def index():
-    user = {'username': 'BGDG'}
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
-    return render_template('index.html', title='Home', posts=posts)
+def index(username):
+    flash(f'Entered index')
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template('index.html', user=user)
 
 
 @bp.route('/user/<username>')
 @login_required
 def user(username):
+    flash(f'{username}')
     user = User.query.filter_by(username=username).first_or_404()
-    posts = [
-        {'author': user, 'body': 'Test post #1'},
-        {'author': user, 'body': 'Test post #2'}
-    ]
-    return render_template('user.html', user=user, posts=posts)
+    flash(f'{user}')
+    categories = []
+    tasks = []
+    # user_cat_xps, categories, tasks = (db.session.query(UserCategoryXp, Category, Task)
+    #                 .filter(UserCategoryXp.user_id == user.id)
+    #                 .filter(Category.id == UserCategoryXp.category_id)
+    #                 .filter(Task.user_id == user.id)
+    #                 .all())
+    # flash(f'{categories, tasks}')
+
+    return render_template('user.html', title='User Profile', user=user, categories=categories, tasks=tasks)
+
+@bp.route('/user/<username>/add_task', methods=['GET', 'POST'])
+@login_required
+def add_user_task(username):
+    user = User.query.filter_by(username=username).first_or_404()
+
+    query_tuple = (db.session.query(UserCategoryXp, Category, Task)
+                    .filter(UserCategoryXp.user_id == user.id)
+                    .filter(Category.id == UserCategoryXp.category_id)
+                    .all())
+    flash(f'{query_tuple}')
+
+    add_task_form = AddTaskForm()
+    add_task_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
+    if add_task_form.add_task_submit.data and add_task_form.validate_on_submit():
+        #category = Category.query.get(int(add_task_form.category_id.data))
+        # flash(f'{category}')
+
+        # task = Task(title=add_task_form.title.data, 
+        #             description=add_task_form.description.data, 
+        #             category=category)
+        # db.session.add(task)
+        # db.session.commit()
+
+        add_category_form = AddCategoryForm()
+        add_task_form = AddTaskForm()
+        categories = Category.query.order_by('title')
+        add_task_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
+        return render_template('add_task.html', user=user, add_task_form=add_task_form)
+    return render_template('add_task.html', user=user, add_task_form=add_task_form)
+
+
+@bp.route('/user/<username>/add_category', methods=['GET', 'POST'])
+@login_required
+def add_user_category(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    categories = Category.query.order_by('title')
+
+    add_user_category_form = AddUserCategoryForm()
+    add_user_category_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
+    if add_user_category_form.add_category_submit.data and add_user_category_form.validate_on_submit():
+        user_category_xp = UserCategoryXp(user_id=user.id, 
+                            category_id=add_user_category_form.description.data, user_category_points=0)
+        db.session.add(user_category_xp)
+        db.session.commit()
+
+        categories = Category.query.order_by('title')
+        add_category_form = AddUserCategoryForm()
+        add_user_category_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
+        return render_template('add_user_category.html', user=user, add_user_category_form=add_user_category_form)
+    return render_template('add_user_category.html', user=user, add_user_category_form=add_user_category_form)
+
 
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
@@ -65,35 +115,35 @@ def edit_profile():
     return render_template('edit_profile.html', title='Edit Profile',
                            form=form)
 
-@bp.route('/follow/<username>')
-@login_required
-def follow(username):
-    user = User.query.filter_by(username=username).first()
-    if user is None:
-        flash('User {} not found.'.format(username))
-        return redirect(url_for('main.index'))
-    if user == current_user:
-        flash('You cannot follow yourself!')
-        return redirect(url_for('main.user', username=username))
-    current_user.follow(user)
-    db.session.commit()
-    flash('You are following {}!'.format(username))
-    return redirect(url_for('main.user', username=username))
+# @bp.route('/follow/<username>')
+# @login_required
+# def follow(username):
+#     user = User.query.filter_by(username=username).first()
+#     if user is None:
+#         flash('User {} not found.'.format(username))
+#         return redirect(url_for('main.index'))
+#     if user == current_user:
+#         flash('You cannot follow yourself!')
+#         return redirect(url_for('main.user', username=username))
+#     current_user.follow(user)
+#     db.session.commit()
+#     flash('You are following {}!'.format(username))
+#     return redirect(url_for('main.user', username=username))
 
-@bp.route('/unfollow/<username>')
-@login_required
-def unfollow(username):
-    user = User.query.filter_by(username=username).first()
-    if user is None:
-        flash('User {} not found.'.format(username))
-        return redirect(url_for('main.index'))
-    if user == current_user:
-        flash('You cannot unfollow yourself!')
-        return redirect(url_for('main.user', username=username))
-    current_user.unfollow(user)
-    db.session.commit()
-    flash('You are not following {}.'.format(username))
-    return redirect(url_for('main.user', username=username))
+# @bp.route('/unfollow/<username>')
+# @login_required
+# def unfollow(username):
+#     user = User.query.filter_by(username=username).first()
+#     if user is None:
+#         flash('User {} not found.'.format(username))
+#         return redirect(url_for('main.index'))
+#     if user == current_user:
+#         flash('You cannot unfollow yourself!')
+#         return redirect(url_for('main.user', username=username))
+#     current_user.unfollow(user)
+#     db.session.commit()
+#     flash('You are not following {}.'.format(username))
+#     return redirect(url_for('main.user', username=username))
 
 @bp.route('/session', methods=['GET', 'POST'])
 def session():
