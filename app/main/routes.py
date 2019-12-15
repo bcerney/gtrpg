@@ -8,9 +8,12 @@ from werkzeug.urls import url_parse
 from app import db
 from app.main import bp
 from app.main.forms import (AddCategoryForm, AddTaskForm, AddUserCategoryForm, EditProfileForm,
-                            SessionForm)
-from app.models import Category, Task, User, UserCategoryXp
+                            NewSessionAddTaskForm, SessionForm)
+from app.models import Category, Task, User, UserCategory, UserSchema
 from app.session import Session
+
+
+USER_SCHEMA = UserSchema(exclude=("last_seen", ))
 
 
 @bp.before_request
@@ -23,79 +26,120 @@ def before_request():
 @bp.route('/')
 @bp.route('/index')
 @login_required
-def index(username):
-    flash(f'Entered index')
-    user = User.query.filter_by(username=username).first_or_404()
-    return render_template('index.html', user=user)
+def index():
+    flash(f'Entered /index')
+    user = User.query.filter_by(username=current_user.username).first_or_404()
+    duser = get_dumped_user(user)
+
+    return render_template('index.html', user=duser)
 
 
-@bp.route('/user/<username>')
+@bp.route('/user/<username>', methods=['GET'])
 @login_required
 def user(username):
-    flash(f'{username}')
+    flash(f'Entered /user/{username}')
+
     user = User.query.filter_by(username=username).first_or_404()
-    flash(f'{user}')
-    categories = []
-    tasks = []
-    # user_cat_xps, categories, tasks = (db.session.query(UserCategoryXp, Category, Task)
-    #                 .filter(UserCategoryXp.user_id == user.id)
-    #                 .filter(Category.id == UserCategoryXp.category_id)
-    #                 .filter(Task.user_id == user.id)
-    #                 .all())
-    # flash(f'{categories, tasks}')
+    duser = get_dumped_user(user)
 
-    return render_template('user.html', title='User Profile', user=user, categories=categories, tasks=tasks)
-
-@bp.route('/user/<username>/add_task', methods=['GET', 'POST'])
-@login_required
-def add_user_task(username):
-    user = User.query.filter_by(username=username).first_or_404()
-
-    query_tuple = (db.session.query(UserCategoryXp, Category, Task)
-                    .filter(UserCategoryXp.user_id == user.id)
-                    .filter(Category.id == UserCategoryXp.category_id)
+    result_list = (db.session.query(UserCategory, Category)
+                    .filter(UserCategory.user_id == user.id)
+                    .filter(Category.id == UserCategory.category_id)
                     .all())
-    flash(f'{query_tuple}')
+    flash(f'{result_list}')
 
-    add_task_form = AddTaskForm()
-    add_task_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
-    if add_task_form.add_task_submit.data and add_task_form.validate_on_submit():
-        #category = Category.query.get(int(add_task_form.category_id.data))
-        # flash(f'{category}')
+    user_task_list = Task.query.filter(Task.user_id == user.id).all()
+    flash(f'{user_task_list}')
 
-        # task = Task(title=add_task_form.title.data, 
-        #             description=add_task_form.description.data, 
-        #             category=category)
-        # db.session.add(task)
-        # db.session.commit()
+    return render_template('user.html', user=duser, result_list=result_list,
+                                        user_task_list=user_task_list)
 
-        add_category_form = AddCategoryForm()
-        add_task_form = AddTaskForm()
-        categories = Category.query.order_by('title')
-        add_task_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
-        return render_template('add_task.html', user=user, add_task_form=add_task_form)
-    return render_template('add_task.html', user=user, add_task_form=add_task_form)
+
+@bp.route('/user/<username>/new_session', methods=['GET'])
+@login_required
+def new_session(username, session_task_list):
+    flash(f'Entered /user/{username}/new_session')
+
+    user = User.query.filter_by(username=current_user.username).first_or_404()
+    duser = get_dumped_user(user)
+
+    if session_task_list is None or not session_task_list:
+        session_task_list = []
+
+    user_tasks = Task.query.filter(Task.user_id == user.id).all()
+    flash(f'{user_tasks}')
+
+    new_session_add_task_form = NewSessionAddTaskForm()
+    new_session_add_task_form.task_id.choices = [(task.id, task.title) for task in user_tasks]
+    if new_session_add_task_form.new_session_add_task_submit.data and new_session_add_task_form.validate_on_submit():
+        task = Task.query.get(int(new_session_add_task_form.task_id.data))
+        session_task_list.append(task)
+
+        user_tasks = Task.query.filter(Task.user_id == user.id).all()
+        
+        new_session_add_task_form = NewSessionAddTaskForm()
+        new_session_add_task_form.task_id.choices = [(task.id, task.title) for task in user_tasks]
+        return render_template(url_for('main.new_session', username=current_user.username, session_task_list=session_task_list))
+    return render_template('new_session.html', username=current_user.username, session_task_list=session_task_list,
+                                    new_session_add_task_form=new_session_add_task_form)
 
 
 @bp.route('/user/<username>/add_category', methods=['GET', 'POST'])
 @login_required
 def add_user_category(username):
     user = User.query.filter_by(username=username).first_or_404()
-    categories = Category.query.order_by('title')
+    duser = get_dumped_user(user)
+
+    user_cat_id_list = []
+    for user_cat in user.user_category:
+        user_cat_id_list.append(user_cat.category_id)
+    flash(f'{user_cat_id_list}')
+
+
+    categories = Category.query.filter(Category.id.notin_(user_cat_id_list)).all()
+    flash(f'{categories}')
 
     add_user_category_form = AddUserCategoryForm()
     add_user_category_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
-    if add_user_category_form.add_category_submit.data and add_user_category_form.validate_on_submit():
-        user_category_xp = UserCategoryXp(user_id=user.id, 
-                            category_id=add_user_category_form.description.data, user_category_points=0)
-        db.session.add(user_category_xp)
+    if add_user_category_form.add_user_category_submit.data and add_user_category_form.validate_on_submit():
+        user_category = UserCategory(user_id=user.id, category_id=add_user_category_form.category_id.data, 
+                                     level=1, xp=0)
+        db.session.add(user_category)
         db.session.commit()
 
-        categories = Category.query.order_by('title')
-        add_category_form = AddUserCategoryForm()
-        add_user_category_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
-        return render_template('add_user_category.html', user=user, add_user_category_form=add_user_category_form)
+        return redirect(url_for('main.user', username=current_user.username))
     return render_template('add_user_category.html', user=user, add_user_category_form=add_user_category_form)
+
+@bp.route('/user/<username>/add_task', methods=['GET', 'POST'])
+@login_required
+def add_user_task(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    duser = get_dumped_user(user)
+
+    user_cat_id_list = []
+    for user_cat in user.user_category:
+        user_cat_id_list.append(user_cat.category_id)
+    flash(f'{user_cat_id_list}')
+
+    categories = Category.query.filter(Category.id.in_(user_cat_id_list)).all()
+    flash(f'{categories}')
+
+    add_task_form = AddTaskForm()
+    add_task_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
+    if add_task_form.add_task_submit.data and add_task_form.validate_on_submit():
+        # category = Category.query.get(int(add_task_form.category_id.data))
+        # flash(f'{category}')
+
+        task = Task(user_id=user.id,
+                    category_id=add_task_form.category_id.data,
+                    title=add_task_form.title.data, 
+                    description=add_task_form.description.data, 
+                    xp=add_task_form.xp.data)
+        db.session.add(task)
+        db.session.commit()
+
+        return redirect(url_for('main.user', username=current_user.username))
+    return render_template('add_task.html', user=user, add_task_form=add_task_form)
 
 
 
@@ -197,3 +241,11 @@ def db_view():
         add_task_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
         return render_template('db_view.html', title='DB View', users=users, categories=categories, add_category_form=add_category_form, add_task_form=add_task_form)
     return render_template('db_view.html', title='DB View', users=users, categories=categories, add_category_form=add_category_form, add_task_form=add_task_form)
+
+# Utility Methods
+# TODO: move to proper utility classes
+
+def get_dumped_user(user):
+    dumped_user = USER_SCHEMA.dump(user)
+    flash(f'dumped_user={dumped_user}')
+    return dumped_user

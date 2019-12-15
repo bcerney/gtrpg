@@ -3,30 +3,26 @@ from time import time
 
 import jwt
 from flask_login import UserMixin
+from marshmallow import fields
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import app
-from app import db, login
+from app import db, login, ma
 
 # followers = db.Table('followers',
 #     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
 #     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 # )
 
-# user_category_points = db.Table('pointstest',
-#     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-#     db.Column('user_category_points', db.Integer, db.ForeignKey('user.id')),
-#     db.Column('category_id', db.Integer, db.ForeignKey('category.id'))
-# )
 
-class UserCategoryXp(db.Model):
+class UserCategory(db.Model):
     user_id = db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
     category_id = db.Column('category_id', db.Integer, db.ForeignKey('category.id'), primary_key=True)
-    user_category_level = db.Column('user_category_level', db.Integer)
-    user_category_xp = db.Column('user_category_xp', db.Integer)
+    level = db.Column('user_category_level', db.Integer)
+    xp = db.Column('user_category_xp', db.Integer)
 
     def __repr__(self):
-        return f'<UserCategoryXp: user_id={self.user_id}, category_id={self.category_id}, user_category_points={self.user_category_points}>'
+        return f'<UserCategory: user_id={self.user_id}, category_id={self.category_id}, level={self.level}, xp={self.xp}>'
 
 
 class User(UserMixin, db.Model):
@@ -35,24 +31,28 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    about_me = db.Column(db.String(140))
+    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
 
     level = db.Column(db.Integer, index=True)
     total_xp = db.Column(db.Integer, index=True)
     xp_to_next_level = db.Column(db.Integer, index=True)
     level_up_xp_modifier = db.Column(db.Integer, index=True)
-    about_me = db.Column(db.String(140))
-    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
-    user_category_xp = db.relationship('UserCategoryXp', lazy=True)
 
+    user_category = db.relationship('UserCategory', lazy=True)
+    
     def __repr__(self):
         return f'<User: id={self.id}, \
                     username={self.username}, \
                     email={self.email}, \
+                    about_me={self.about_me}, \
+                    last_seen={self.last_seen}, \
+                    level={self.level}, \
                     level={self.level}, \
                     total_xp={self.total_xp}, \
                     xp_to_next_level={self.xp_to_next_level}, \
                     level_up_xp_modifier={self.level_up_xp_modifier}, \
-                    about_me={self.about_me}>'
+                    user_category={self.user_category}>'
 
     # followed = db.relationship(
     #     'User', secondary=followers,
@@ -92,10 +92,17 @@ class User(UserMixin, db.Model):
     #     return self.followed.filter(
     #         followers.c.followed_id == user.id).count() > 0
 
-
+# TODO: add logging to help determine how loader is used
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
+class UserSchema(ma.ModelSchema):
+    last_seen = fields.DateTime()
+
+    class Meta:
+        model = User
+
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -115,7 +122,6 @@ class Task(db.Model):
 
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(200))
-    for_x_minutes = db.Column(db.Integer, index=True)
     xp = db.Column(db.Integer, index=True)
 
     def __repr__(self):
@@ -125,5 +131,4 @@ class Task(db.Model):
                 timestamp={self.timestamp} \
                 title={self.title,}>, \
                 description={self.description}, \
-                for_x_minutes={self.for_x_minutes}, \
                 xp={self.xp}'

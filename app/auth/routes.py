@@ -15,7 +15,7 @@ def login():
     flash(f'Entered login...')
     if current_user.is_authenticated:
         flash(f'{current_user} is authenticated')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.index', username=current_user.username))
     login_form = LoginForm()
     if login_form.validate_on_submit():
         flash(f'Entered login_form_submit...')
@@ -25,12 +25,11 @@ def login():
             flash('Invalid username or password')
             return redirect(url_for('auth.login'))
         login_user(user, remember=login_form.remember_me.data)
-        # next_page = request.args.get('next')
-        # if not next_page or url_parse(next_page).netloc != '':
-        #     next_page = url_for('main.index')
-        flash(f'user logged in')
-        flash(f'{current_user}')
-        return redirect(url_for('main.index'))
+        flash(f'User {current_user} logged in')
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('main.index')        
+        return redirect(next_page)
     return render_template('auth/login.html', title='Sign In', form=login_form)
 
 

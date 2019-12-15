@@ -1,9 +1,5 @@
 {% extends 'bootstrap/base.html' %}
 
-{% block title %}
-        {% if title %}{{ title }} - gtRPG {% else %}Welcome to gtRPG{% endif %}
-{% endblock %}
-
 {% block navbar %}
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="{{ url_for('main.index', username=current_user.username) }}">gtRPG</a>

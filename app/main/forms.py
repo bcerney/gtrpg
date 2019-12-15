@@ -3,6 +3,11 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, Integ
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 from app.models import User
 
+
+class NewSessionAddTaskForm(FlaskForm):
+    task_id = SelectField(u'Task', coerce=int)
+    new_session_add_task_submit = SubmitField('Add Task')
+
 class SessionForm(FlaskForm):
     length_of_session = IntegerField('Length of Session (minutes)', validators=[DataRequired()])
     number_of_categories = IntegerField('# of Categories', validators=[DataRequired()])
@@ -11,11 +16,12 @@ class SessionForm(FlaskForm):
 class AddTaskForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
+    xp = IntegerField('XP', validators=[DataRequired()])
     category_id = SelectField(u'Category', coerce=int)
     add_task_submit = SubmitField('Add Task')
 
     def __repr__(self):
-        return f'<AddTaskForm: title={self.title,}>, description={self.description}, category_id={self.category_id}'
+        return f'<AddTaskForm: title={self.title,}>, description={self.description}, xp={self.xp}, category_id={self.category_id}'
 
 
 class AddCategoryForm(FlaskForm):

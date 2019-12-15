@@ -11,11 +11,13 @@ bgdg = User(username='BGDG', email='brianecerney@gmail.com', total_points=0)
 db.session.add(bgdg)
 db.session.commit()
 
-frt = Category(title='Music Theory', description='Applied theory, flesh out vs. Fretboard Mastery')
+frt = Category(title='Acoustic', description='Acoustic')
 db.session.add(frt)
 db.session.commit()
 
-ucp = Test(user_id=1, category_id=1, user_category_points=0)
+uc = UserCategory(user_id=1, category_id=2, level=1, xp=0)
+db.session.add(uc)
+db.session.commit()
 
 task_1 = Task(title='Find Fingerstyle Blues Songs', description='Find Fingerstyle Blues Songs', category=cat)
 db.session.add(task_1)
