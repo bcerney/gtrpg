@@ -1,3 +1,7 @@
+session_draft = Session.query.filter(Session.user_id == 1, Session.is_draft is True).first()
+
+
+
 docker run -d -p 5000:5000 gtrpg && docker logs -f gtrpg 
 
 docker run -it --net host gtrpg:latest bash
@@ -5,6 +9,10 @@ docker run -it --net host gtrpg:latest bash
 docker build -t gtrpg:latest .
 
 export FLASK_DEBUG=1
+
+flask db init
+flask db migrate -m "session table"
+flask db upgrade
 
 
 bgdg = User(username='BGDG', email='brianecerney@gmail.com', total_points=0)

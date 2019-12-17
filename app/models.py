@@ -1,28 +1,34 @@
 from datetime import datetime
+from flask import flash
 from time import time
 
 import jwt
 from flask_login import UserMixin
-from marshmallow import fields
+from marshmallow import fields, post_load
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import app
 from app import db, login, ma
 
-# followers = db.Table('followers',
-#     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
-#     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
-# )
-
 
 class UserCategory(db.Model):
     user_id = db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
     category_id = db.Column('category_id', db.Integer, db.ForeignKey('category.id'), primary_key=True)
-    level = db.Column('user_category_level', db.Integer)
-    xp = db.Column('user_category_xp', db.Integer)
+    level = db.Column('user_category_level', db.Integer, default=1, index=True)
+    xp = db.Column('user_category_xp', db.Integer, default=0, index=True)
+    level_up_xp_modifier = db.Column(db.Integer, default=5)
+    xp_to_next_level = db.Column(db.Integer, default=5)
+    xp_to_next_level_constant = db.Column(db.Float, default=5.0)
+    
 
     def __repr__(self):
-        return f'<UserCategory: user_id={self.user_id}, category_id={self.category_id}, level={self.level}, xp={self.xp}>'
+        return f'<UserCategory: user_id={self.user_id}, \
+                  category_id={self.category_id}, \
+                  level={self.level}, \
+                  xp={self.xp}, \
+                  level_up_xp_modifier={self.level_up_xp_modifier}, \
+                  xp_to_next_level={self.xp_to_next_level}, \
+                  xp_to_next_level_constant={self.xp_to_next_level_constant}>'
 
 
 class User(UserMixin, db.Model):
@@ -34,13 +40,14 @@ class User(UserMixin, db.Model):
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
 
-    level = db.Column(db.Integer, index=True)
-    total_xp = db.Column(db.Integer, index=True)
-    xp_to_next_level = db.Column(db.Integer, index=True)
-    level_up_xp_modifier = db.Column(db.Integer, index=True)
+    level = db.Column(db.Integer, default=1, index=True)
+    xp = db.Column(db.Integer, default=0, index=True)
+    level_up_xp_modifier = db.Column(db.Integer, default=5, index=True)
+    xp_to_next_level = db.Column(db.Integer, default=5, index=True)
+    xp_to_next_level_constant = db.Column(db.Float, default=5.0)
 
     user_category = db.relationship('UserCategory', lazy=True)
-    
+
     def __repr__(self):
         return f'<User: id={self.id}, \
                     username={self.username}, \
@@ -48,17 +55,11 @@ class User(UserMixin, db.Model):
                     about_me={self.about_me}, \
                     last_seen={self.last_seen}, \
                     level={self.level}, \
-                    level={self.level}, \
-                    total_xp={self.total_xp}, \
+                    xp={self.xp}, \
                     xp_to_next_level={self.xp_to_next_level}, \
+                    xp_to_next_level_constant={self.xp_to_next_level_constant}, \
                     level_up_xp_modifier={self.level_up_xp_modifier}, \
                     user_category={self.user_category}>'
-
-    # followed = db.relationship(
-    #     'User', secondary=followers,
-    #     primaryjoin=(followers.c.follower_id == id),
-    #     secondaryjoin=(followers.c.followed_id == id),
-    #     backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -76,26 +77,16 @@ class User(UserMixin, db.Model):
         try:
             id = jwt.decode(token, app.config['SECRET_KEY'],
                             algorithms=['HS256'])['reset_password']
-        except:
+        except Exception as e:
+            flash(f'Exception occured: {e}')
             return
         return User.query.get(id)
 
-    # def follow(self, user):
-    #     if not self.is_following(user):
-    #         self.followed.append(user)
 
-    # def unfollow(self, user):
-    #     if self.is_following(user):
-    #         self.followed.remove(user)
-
-    # def is_following(self, user):
-    #     return self.followed.filter(
-    #         followers.c.followed_id == user.id).count() > 0
-
-# TODO: add logging to help determine how loader is used
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
 
 class UserSchema(ma.ModelSchema):
     last_seen = fields.DateTime()
@@ -112,7 +103,34 @@ class Category(db.Model):
     tasks = db.relationship('Task', backref='category', lazy=True)
 
     def __repr__(self):
-        return f'<Category: id={self.id}, title={self.title}>, description={self.description}, tasks={self.tasks}'
+        return f'<Category: id={self.id}, \
+                  title={self.title}>, \
+                  description={self.description}, \
+                  tasks={self.tasks}>'
+
+
+session_tasks_atable = db.Table('session_tasks_atable',
+    db.Column('session_id', db.Integer, db.ForeignKey('session.id')),
+    db.Column('task_id', db.Integer, db.ForeignKey('task.id'))
+)
+
+
+class Session(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+    created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    completed = db.Column(db.DateTime, index=True)
+    tasks = db.relationship('Task', secondary=session_tasks_atable)
+    is_draft = db.Column(db.Boolean, default=True)
+
+    def __repr__(self):
+        return f'<Session: id={self.id}, \
+                  user_id={self.user_id}>, \
+                  created={self.created}>, \
+                  completed={self.completed}>, \
+                  is_draft={self.is_draft}, \
+                  tasks={self.tasks}>'
+
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -132,3 +150,14 @@ class Task(db.Model):
                 title={self.title,}>, \
                 description={self.description}, \
                 xp={self.xp}'
+
+
+class TaskSchema(ma.ModelSchema):
+    timestamp = fields.DateTime()
+
+    @post_load
+    def make_task(self, data, **kwargs):
+        return Task(**data)
+
+    class Meta:
+        model = Task

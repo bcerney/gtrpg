@@ -6,10 +6,9 @@
             <td>
                 <h1>{{ user.username }}</h1>
                 <h2> Level: {{ user.level }}</h2>
-                <h3> Total XP: {{ user.total_xp }}</h3>
+                <h3> Total XP: {{ user.xp }}</h3>
                 <h3> XP to Next Level: {{ user.xp_to_next_level }}</h3>
-                {% set session_task_list = [] %}
-                <h4><a href="{{ url_for('main.new_session', username=current_user.username, session_task_list=session_task_list) }}">New Session</a></h4>
+                <h4><a href="{{ url_for('main.new_session', username=current_user.username) }}">New Session</a></h4>
                 {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
                 {% if user.last_seen %}<p>Last seen on: {{ user.last_seen }}</p>{% endif %}
                 {% if user == current_user %}
@@ -54,7 +53,7 @@
     <div class="row" id ="tasksTable">
         <div class="col-12">
             <h2>User Tasks</h2>
-            <p></p><a href="{{ url_for('main.add_user_task', username=current_user.username) }}">Add Task</a></p>
+            <p><a href="{{ url_for('main.add_user_task', username=current_user.username) }}">Add Task</a></p>
             <table class="table table-dark table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
@@ -68,8 +67,6 @@
                 </thead>
                 <tbody>
                     {% for task in user_task_list %}
-                        <p>{{task}}</p>
-                        <p>{{user_task_list}}</p>
                         <tr>
                             <th scope="row">{{task.id}}</th>
                             <td>{{task.category_id}}</td>
