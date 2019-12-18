@@ -1,17 +1,30 @@
+session_draft = Session.query.filter(Session.user_id == 1, Session.is_draft is True).first()
+
+
+
 docker run -d -p 5000:5000 gtrpg && docker logs -f gtrpg 
 
 docker run -it --net host gtrpg:latest bash
 
 docker build -t gtrpg:latest .
 
+export FLASK_DEBUG=1
+
+flask db init
+flask db migrate -m "session table"
+flask db upgrade
 
 
 bgdg = User(username='BGDG', email='brianecerney@gmail.com', total_points=0)
 db.session.add(bgdg)
 db.session.commit()
 
-frt = Category(title='Music Theory', description='Applied theory, flesh out vs. Fretboard Mastery')
+frt = Category(title='Acoustic', description='Acoustic')
 db.session.add(frt)
+db.session.commit()
+
+uc = UserCategory(user_id=1, category_id=2, level=1, xp=0)
+db.session.add(uc)
 db.session.commit()
 
 task_1 = Task(title='Find Fingerstyle Blues Songs', description='Find Fingerstyle Blues Songs', category=cat)
@@ -58,7 +71,39 @@ postgresql-curly-79413
 
 heroku config:set FLASK_APP=py-flask-gtrpg.py
 heroku config:set LOG_TO_STDOUT=1
+heroku config:set SECRET_KEY=...
 Setting LOG_TO_STDOUT and restarting flask-microblog... done, v4
 LOG_TO_STDOUT: 1
 
 git push heroku <master or branch you're working on>
+
+~/repos/py-flask-gtrpg$ heroku ps
+Free dyno hours quota remaining this month: 550h 0m (100%)
+Free dyno usage for this app: 0h 0m (0%)
+For more information on dyno sleeping and how to upgrade, see:
+https://devcenter.heroku.com/articles/dyno-sleeping
+
+
+heroku open
+
+heroku ps:scale <group-name, ex. web>>=<#-of-dynos>
+
+heroku local web
+
+heroku pg
+=== DATABASE_URL
+Plan:                  Hobby-dev
+Status:                Available
+Connections:           2/20
+PG Version:            11.5
+Created:               2019-11-15 22:03 UTC
+Data Size:             8.2 MB
+Tables:                5
+Rows:                  8/10000 (In compliance)
+Fork/Follow:           Unsupported
+Rollback:              Unsupported
+Continuous Protection: Off
+Add-on:                postgresql-curly-79413
+
+https://tomcam.github.io/postgres/
+Notes on PSQL CLI

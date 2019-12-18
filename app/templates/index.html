@@ -1,13 +1,78 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    <h1>Hi, {{ current_user.username }}!</h1>
-    <h1>Hi, {{ current_user.username }}!</h1>
-    <h1>Hi, {{ current_user.username }}!</h1>
-    <h1>Hi, {{ current_user.username }}!</h1>
-    <h1>Hi, {{ current_user.username }}!</h1>
-    <h1>Hi, {{ current_user.username }}!</h1>
-    <h1>Hi, {{ current_user.username }}!</h1>
-    <h1>Hi, {{ current_user.username }}!</h1>
-    <h1>Hi, {{ current_user.username }}!</h1>
+    <table>
+        <tr valign="top">
+            <td>
+                <h1>{{ user.username }}</h1>
+                <h2> Level: {{ user.level }}</h2>
+                <p> Total XP: {{ user.xp }}</p>
+                <p> XP to Next Level: {{ user.xp_to_next_level }}</p>
+                <a href="{{ url_for('main.new_session', username=current_user.username) }}" class="btn btn-info" role="button">New Session</a>
+                {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+                {% if user.last_seen %}<p>Last seen on: {{ user.last_seen }}</p>{% endif %}
+                {% if user == current_user %}
+                <p><a href="{{ url_for('main.edit_profile') }}">Edit your profile</a></p>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    <hr>
+
+    <div class="row" id ="userCategoriesTable">
+        <div class="col">
+            <h2>Categories</h2>
+            <p><a href="{{ url_for('main.add_user_category', username=current_user.username) }}" class="btn btn-info" role="button">Add Category</a></p>
+            <table class="table table-dark table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Level</th>
+                        <th scope="col">XP</th>
+                        <th scope="col">XP to Next Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in result_list %}
+                        <tr>
+                            <th scope="row">{{result[1].title}}</th>
+                            <td>{{result[1].description}}</td>
+                            <td>{{result[0].level}}</td>
+                            <td>{{result[0].xp}}</td>
+                            <td>{{result[0].xp_to_next_level}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row" id ="tasksTable">
+        <div class="col">
+            <h2>Tasks</h2>
+            <p><a href="{{ url_for('main.add_user_task', username=current_user.username) }}" class="btn btn-info" role="button">Add Task</a></p>
+            <table class="table table-dark table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">XP</th>                      
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in user_task_list %}
+                        <tr>
+                            <th scope="row">{{task.title}}</th>
+                            <td>{{task.description}}</td>
+                            <td>{{task.category.title}}</td>
+                            <td>{{task.xp}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 {% endblock %}

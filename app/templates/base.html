@@ -1,27 +1,22 @@
 {% extends 'bootstrap/base.html' %}
 
-{% block title %}
-        {% if title %}{{ title }} - gtRPG {% else %}Welcome to gtRPG{% endif %}
-{% endblock %}
-
 {% block navbar %}
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="/index">gtRPG</a>
+        <a class="navbar-brand" href="{{ url_for('main.index', username=current_user.username) }}">gtRPG</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <div class="navbar-nav">
-                <a class="nav-item nav-link" href="{{ url_for('main.index') }}">Home</a>
+            <ul class="navbar-nav">
+                <a class="nav-link nav-item" href="{{ url_for('main.index', username=current_user.username) }}">Home</a>
                 {% if current_user.is_anonymous %}
-                <a class="nav-item nav-link" href="{{ url_for('auth.login') }}">Log In</a>
+                <a class="nav-link nav-item" href="{{ url_for('auth.login') }}">Log In</a>
                 {% else %}
-                <a class="nav-item nav-link" href="{{ url_for('main.user', username=current_user.username) }}">{{ current_user.username }} Profile</a>
-                <a class="nav-item nav-link" href="{{ url_for('main.session') }}">Session</a>
-                <a class="nav-item nav-link" href="{{ url_for('main.db_view') }}">Database</a>
-                <a class="nav-item nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
+                <!-- <a class="nav-item nav-link" href="{{ url_for('main.user', username=current_user.username) }}">{{ current_user.username }} Profile</a> -->
+                <a class="nav-link nav-item" href="{{ url_for('main.db_view') }}">Database</a>
+                <a class="nav-link nav-item" href="{{ url_for('auth.logout') }}">Log Out</a>
                 {% endif %}
-            </div>
+            </ul>
         </div>
     </nav>
 {% endblock %}
