@@ -1,13 +1,13 @@
 from datetime import datetime
-from flask import flash
 from time import time
 
 import jwt
+from flask import current_app as app
+from flask import flash
 from flask_login import UserMixin
 from marshmallow import fields, post_load
 from werkzeug.security import check_password_hash, generate_password_hash
 
-import app
 from app import db, login, ma
 
 

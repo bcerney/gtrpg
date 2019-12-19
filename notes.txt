@@ -69,6 +69,8 @@ Use heroku addons:docs heroku-postgresql to view documentation
 
 postgresql-curly-79413
 
+heroku addons:remove heroku-postgresql:hobby-dev
+
 heroku config:set FLASK_APP=py-flask-gtrpg.py
 heroku config:set LOG_TO_STDOUT=1
 heroku config:set SECRET_KEY=...

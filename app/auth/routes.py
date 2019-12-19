@@ -15,15 +15,10 @@ USER_SCHEMA = UserSchema(exclude=("last_seen", ))
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    # flash(f'Entered login...')
-    flash(f'request={request.data}')
     if current_user.is_authenticated:
-        # flash(f'{current_user} is authenticated')
-        return redirect(url_for('main.user', username=current_user.username))
+        return redirect(url_for('main.index'))
     login_form = LoginForm()
     if login_form.validate_on_submit():
-        # flash(f'Entered login_form_submit...')
-        flash(f'request={request.data}')
         user = User.query.filter_by(username=login_form.username.data).first_or_404()
         get_dumped_user(user)
 
@@ -31,13 +26,10 @@ def login():
             flash('Invalid username or password')
             return redirect(url_for('auth.login'))
         login_user(user, remember=login_form.remember_me.data)
-        # flash(f'User {current_user} logged in')
         next_page = request.args.get('next')
-        flash(f'next_page={next_page}')
         if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('main.user', username=current_user.username)
+            next_page = url_for('main.index')
 
-        flash(f'next_page={next_page}')
         return redirect(next_page)
     return render_template('auth/login.html', title='Log In', form=login_form)
 
@@ -106,5 +98,5 @@ def reset_password(token):
 
 def get_dumped_user(user):
     dumped_user = USER_SCHEMA.dump(user)
-    flash(f'dumped_user={dumped_user}')
+    # flash(f'dumped_user={dumped_user}')
     return dumped_user

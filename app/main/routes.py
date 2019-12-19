@@ -67,7 +67,6 @@ def new_session(username):
     duser = get_dumped_user(user)
 
     session_draft = get_session_draft(current_user.id)
-    debug_flash("session_draft", session_draft)
 
     task_id_list = []
     for task in session_draft.tasks:
@@ -102,15 +101,30 @@ def new_session(username):
     return render_template('new_session.html', username=current_user.username, new_session_add_task_form=new_session_add_task_form, session_draft=session_draft)
 
 
+@bp.route('/user/<username>/clear_session_draft', methods=['GET', 'POST'])
+@login_required
+def clear_session_draft(username):
+    session_draft = get_session_draft(current_user.id)
+    session_draft.tasks = []
+    db.session.add(session_draft)
+    db.session.commit()
+
+    return redirect(url_for('main.new_session', username=current_user.username))
+
+
 @bp.route('/user/<username>/run_session', methods=['GET', 'POST'])
 @login_required
 def run_session(username):
     user = User.query.filter_by(username=current_user.username).first_or_404()
     duser = get_dumped_user(user)
 
+    # TODO: move to validate_session_draft class
     session_draft = get_session_draft(current_user.id)
+    if len(session_draft.tasks) < 1:
+        flash('Session draft contains no tasks. Please add a task to session draft to continue')
+        return redirect(url_for('main.new_session', username=current_user.username))
+
     run_session_form = RunSessionForm(session_id=session_draft.id)
-    # run_session_form.session_tasks.choices = [(task.id, task.title) for task in session_draft.tasks]
 
     if run_session_form.run_session_submit.data and run_session_form.validate_on_submit():
         user = User.query.filter_by(username=current_user.username).first_or_404()
@@ -145,7 +159,7 @@ def add_user_category(username):
                                      level=1, xp=0, xp_to_next_level=5, level_up_xp_modifier=5)
         db.session.add(user_category)
         db.session.commit()
-        flash(f'Category added for {current_user.username}')
+        flash(f'Category successfuly added')
 
         return redirect(url_for('main.add_user_category', username=current_user.username))
     return render_template('add_user_category.html', user=user, add_user_category_form=add_user_category_form)
@@ -241,7 +255,6 @@ def db_view():
 
 def get_dumped_user(user):
     dumped_user = USER_SCHEMA.dump(user)
-    # flash(f'dumped_user={dumped_user}')
     return dumped_user
 
 
@@ -282,6 +295,7 @@ def update_user_xp(user, task):
         while task_xp >= user.xp_to_next_level:
             # Update User
             user.level = user.level + 1
+            flash(f'Level up! {user.username} rose to level {user.level}.')
             user.xp = user.xp + task_xp
 
             task_xp = task_xp - user.xp_to_next_level
@@ -308,6 +322,7 @@ def update_user_category_xp(user, category, task):
 
         while task_xp >= user_category.xp_to_next_level:
             user_category.level = user_category.level + 1
+            flash(f'Level up! {user.username} rose to level {user_category.level} in category {category.title}.')
             user_category.xp = user_category.xp + task_xp
 
             task_xp = task_xp - user_category.xp_to_next_level
