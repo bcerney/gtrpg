@@ -1,8 +1,8 @@
 from threading import Thread
 
+from flask import current_app as app
 from flask_mail import Message
 
-import app
 from app import mail
 
 
