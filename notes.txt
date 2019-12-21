@@ -67,7 +67,7 @@ Database has been created and is available
 Created postgresql-parallel-56076 as DATABASE_URL
 Use heroku addons:docs heroku-postgresql to view documentation
 
-postgresql-curly-79413
+heroku addons:remove heroku-postgresql:hobby-dev
 
 heroku addons:remove heroku-postgresql:hobby-dev
 
@@ -92,20 +92,3 @@ heroku ps:scale <group-name, ex. web>>=<#-of-dynos>
 
 heroku local web
 
-heroku pg
-=== DATABASE_URL
-Plan:                  Hobby-dev
-Status:                Available
-Connections:           2/20
-PG Version:            11.5
-Created:               2019-11-15 22:03 UTC
-Data Size:             8.2 MB
-Tables:                5
-Rows:                  8/10000 (In compliance)
-Fork/Follow:           Unsupported
-Rollback:              Unsupported
-Continuous Protection: Off
-Add-on:                postgresql-curly-79413
-
-https://tomcam.github.io/postgres/
-Notes on PSQL CLI

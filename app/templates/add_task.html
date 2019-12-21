@@ -2,10 +2,45 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h1>Add Task</h1>
+    <div class="row" id ="tasksTable">
+        <div class="col">
+            <h2>{{current_user.username}} Tasks</h2>
+            {% if (user_task_list is defined) and user_task_list %}
+            <table class="table table-dark table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">XP</th>                      
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in user_task_list %}
+                        <tr>
+                            <th scope="row">{{task.title}}</th>
+                            <td>{{task.description}}</td>
+                            <td>{{task.category.title}}</td>
+                            <td>{{task.xp}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <h4><i>No tasks added</i></h4>
+            {% endif %}
+        </div>
+    </div>
+
+    
     <div class="row">
         <div class="col-md-4">
+            {% if (add_task_form.category_id.choices is defined) and add_task_form.category_id.choices %}
+            <h1>Add Task</h1>
             {{ wtf.quick_form(add_task_form) }}
+            {% else %}
+            <h4><i>To add a task, you must first <a href="{{ url_for('main.add_user_category', username=current_user.username) }}">add a category.</a></i></h4>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

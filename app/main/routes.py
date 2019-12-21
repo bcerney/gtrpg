@@ -150,10 +150,14 @@ def add_user_category(username):
     for user_cat in user.user_category:
         user_cat_id_list.append(user_cat.category_id)
 
-    categories = Category.query.filter(Category.id.notin_(user_cat_id_list)).all()
+    cat_user_cat_result = (db.session.query(UserCategory, Category)
+                   .filter(UserCategory.user_id == user.id)
+                   .filter(Category.id == UserCategory.category_id)
+                   .all())
 
     add_user_category_form = AddUserCategoryForm()
-    add_user_category_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
+    non_user_cats = Category.query.filter(Category.id.notin_(user_cat_id_list)).all()
+    add_user_category_form.category_id.choices = [(cat.id, cat.title) for cat in non_user_cats]
     if add_user_category_form.add_user_category_submit.data and add_user_category_form.validate_on_submit():
         user_category = UserCategory(user_id=user.id, category_id=add_user_category_form.category_id.data,
                                      level=1, xp=0, xp_to_next_level=5, level_up_xp_modifier=5)
@@ -162,7 +166,8 @@ def add_user_category(username):
         flash(f'Category successfuly added')
 
         return redirect(url_for('main.add_user_category', username=current_user.username))
-    return render_template('add_user_category.html', user=user, add_user_category_form=add_user_category_form)
+    return render_template('add_user_category.html', user=user, add_user_category_form=add_user_category_form,
+                            cat_user_cat_result=cat_user_cat_result)
 
 
 @bp.route('/user/<username>/add_task', methods=['GET', 'POST'])
@@ -171,13 +176,15 @@ def add_user_task(username):
     user = User.query.filter_by(username=username).first_or_404()
     duser = get_dumped_user(user)
 
+    user_task_list = Task.query.filter(Task.user_id == user.id).all()
+
+    add_task_form = AddTaskForm()
     user_cat_id_list = []
     for user_cat in user.user_category:
         user_cat_id_list.append(user_cat.category_id)
-
-    add_task_form = AddTaskForm()
     categories = Category.query.filter(Category.id.in_(user_cat_id_list)).all()
     add_task_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
+
     if add_task_form.add_task_submit.data and add_task_form.validate_on_submit():
         task = Task(user_id=user.id,
                     category_id=add_task_form.category_id.data,
@@ -189,7 +196,8 @@ def add_user_task(username):
         flash(f'Task "{task.title}" added for {current_user.username}')
 
         return redirect(url_for('main.add_user_task', username=current_user.username))
-    return render_template('add_task.html', user=user, add_task_form=add_task_form)
+
+    return render_template('add_task.html', user=user, user_task_list=user_task_list, add_task_form=add_task_form)
 
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
