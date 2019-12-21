@@ -2,7 +2,7 @@
 
 set -x
 
-export FLASK_APP=py-flask-gtrpg.py
+export FLASK_APP=gtrpg.py
 
 docker build -t gtrpg:latest -f app/Dockerfile .
 
