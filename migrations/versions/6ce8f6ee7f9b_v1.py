@@ -1,8 +1,8 @@
-"""xp_to_next_level_constant
+"""v1
 
-Revision ID: 61c37cd7f708
+Revision ID: 6ce8f6ee7f9b
 Revises: 
-Create Date: 2019-12-18 12:44:59.286075
+Create Date: 2019-12-21 11:51:27.099662
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '61c37cd7f708'
+revision = '6ce8f6ee7f9b'
 down_revision = None
 branch_labels = None
 depends_on = None
