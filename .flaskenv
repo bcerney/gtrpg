@@ -1,1 +1,1 @@
-FLASK_APP=py-flask-gtrpg.py
+FLASK_APP=gtrpg.py
