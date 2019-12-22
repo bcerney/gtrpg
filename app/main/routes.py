@@ -1,5 +1,4 @@
 import math
-import sys
 from datetime import datetime
 
 from flask import flash, redirect, render_template, request, url_for
@@ -38,8 +37,9 @@ def index():
                    .all())
 
     user_task_list = Task.query.filter(Task.user_id == user.id).all()
+    last_session = get_last_session(user)
 
-    return render_template('index.html', title="Dashboard - gtRPG", user=duser, result_list=result_list,
+    return render_template('index.html', title="Dashboard | gtRPG", user=duser, last_session=last_session, result_list=result_list,
                             user_task_list=user_task_list)
 
 
@@ -56,7 +56,7 @@ def user(username):
     debug_flash("result_list", result_list)
 
     user_task_list = Task.query.filter(Task.user_id == user.id).all()
-    return render_template('user.html',  title=f"{user.username} Profile - gtRPG", user=duser, result_list=result_list,
+    return render_template('user.html', title=f"{user.username} Profile | gtRPG", user=duser, result_list=result_list,
                             user_task_list=user_task_list)
 
 
@@ -97,8 +97,8 @@ def new_session(username):
         new_session_add_task_form = NewSessionAddTaskForm()
         new_session_add_task_form.task_id.choices = [(task.id, f'{task.title} | {task.xp} XP') for task in user_tasks]
 
-        return render_template('new_session.html', title="New Session - gtRPG", username=current_user.username, new_session_add_task_form=new_session_add_task_form, session_draft=session_draft)
-    return render_template('new_session.html', title="New Session - gtRPG", username=current_user.username, new_session_add_task_form=new_session_add_task_form, session_draft=session_draft)
+        return render_template('new_session.html', title="New Session | gtRPG", username=current_user.username, new_session_add_task_form=new_session_add_task_form, session_draft=session_draft)
+    return render_template('new_session.html', title="New Session | gtRPG", username=current_user.username, new_session_add_task_form=new_session_add_task_form, session_draft=session_draft)
 
 
 @bp.route('/user/<username>/clear_session_draft', methods=['GET', 'POST'])
@@ -131,13 +131,16 @@ def run_session(username):
         duser = get_dumped_user(user)
 
         completed_task_ids = request.form.getlist("completed")
+        # TODO: replace passing ids with getting all completed tasks here, passing one by one to process, pass list to update session
+        # TODO: limits queries
 
         for task_id in completed_task_ids:
             process_task(task_id, user)
-        update_session(run_session_form.session_id.data)
+
+        update_session(run_session_form.session_id.data, completed_task_ids)
 
         return redirect(url_for('main.index'))
-    return render_template('run_session.html', title="Session - gtRPG", session=session_draft, run_session_form=run_session_form)
+    return render_template('run_session.html', title="Session | gtRPG", session=session_draft, run_session_form=run_session_form)
 
 
 @bp.route('/user/<username>/add_category', methods=['GET', 'POST'])
@@ -166,7 +169,7 @@ def add_user_category(username):
         flash(f'Category successfuly added')
 
         return redirect(url_for('main.add_user_category', username=current_user.username))
-    return render_template('add_user_category.html', title="Add Category - gtRPG", user=user, add_user_category_form=add_user_category_form,
+    return render_template('add_user_category.html', title="Add Category | gtRPG", user=user, add_user_category_form=add_user_category_form,
                             cat_user_cat_result=cat_user_cat_result)
 
 
@@ -197,7 +200,7 @@ def add_user_task(username):
 
         return redirect(url_for('main.add_user_task', username=current_user.username))
 
-    return render_template('add_task.html', title="Add Task - gtRPG", user=user, user_task_list=user_task_list, add_task_form=add_task_form)
+    return render_template('add_task.html', title="Add Task | gtRPG", user=user, user_task_list=user_task_list, add_task_form=add_task_form)
 
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
@@ -213,7 +216,7 @@ def edit_profile():
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
-    return render_template('edit_profile.html', title='Edit Profile',
+    return render_template('edit_profile.html', title='Edit Profile | gtRPG',
                            form=form)
 
 
@@ -236,7 +239,7 @@ def db_view():
         add_task_form = AddTaskForm()
         categories = Category.query.order_by('title')
         add_task_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
-        return render_template('db_view.html', title='Database - gtRPG', users=users, categories=categories, add_category_form=add_category_form, add_task_form=add_task_form)
+        return render_template('db_view.html', title='Database | gtRPG', users=users, categories=categories, add_category_form=add_category_form, add_task_form=add_task_form)
     elif add_task_form.add_task_submit.data and add_task_form.validate_on_submit():
         flash(f'form={add_task_form}')
         flash(f'{add_task_form.category_id.data}')
@@ -254,16 +257,18 @@ def db_view():
         add_task_form = AddTaskForm()
         categories = Category.query.order_by('title')
         add_task_form.category_id.choices = [(cat.id, cat.title) for cat in categories]
-        return render_template('db_view.html', title='Database - gtRPG', users=users, categories=categories, add_category_form=add_category_form, add_task_form=add_task_form)
-    return render_template('db_view.html', title='Database - gtRPG', users=users, categories=categories, add_category_form=add_category_form, add_task_form=add_task_form)
+        return render_template('db_view.html', title='Database | gtRPG', users=users, categories=categories, add_category_form=add_category_form, add_task_form=add_task_form)
+    return render_template('db_view.html', title='Database | gtRPG', users=users, categories=categories, add_category_form=add_category_form, add_task_form=add_task_form)
+
 
 @bp.route('/about', methods=['GET'])
 def about():
-    return render_template('about.html', title='Database - gtRPG')
+    return render_template('about.html', title='About | gtRPG')
+
 
 @bp.route('/contact', methods=['GET', 'POST'])
 def contact():
-    return render_template('contact.html', title='Database - gtRPG')
+    return render_template('contact.html', title='Contact | gtRPG')
 
 # Utility Methods
 # TODO: move to proper utility classes
@@ -278,6 +283,7 @@ def debug_flash(item_name, item):
     if DEBUG is True:
         flash(f'{item_name}={item}')
 
+
 def get_session_draft(user_id):
     session_draft = Session.query.filter(Session.user_id == user_id, Session.is_draft.is_(True)).first()
     debug_flash("session_draft", session_draft)
@@ -291,6 +297,11 @@ def get_session_draft(user_id):
         return session
 
 
+def get_last_session(user):
+    last_session = Session.query.filter(Session.user_id == user.id, Session.completed.isnot(None)).order_by(Session.completed.desc()).first()
+    return last_session
+
+
 def process_task(task_id, user):
     task = Task.query.get(int(task_id))
     category = Category.query.get(int(task.category_id))
@@ -298,6 +309,7 @@ def process_task(task_id, user):
     update_user_xp(user, task)
     update_user_category_xp(user, category, task)
     db.session.commit()
+
 
 def update_user_xp(user, task):
     debug_flash("user on entry to update_user_xp", user)
@@ -352,8 +364,14 @@ def update_user_category_xp(user, category, task):
     debug_flash("user on exit of update_user_category_xp", user)
 
 
-def update_session(session_id):
+def update_session(session_id, completed_task_ids):
     session = Session.query.get(int(session_id))
+
     session.is_draft = False
     session.completed = datetime.now()
+
+    # Replace session.tasks with completed tasks
+    session_tasks = Task.query.filter(Task.id.in_(completed_task_ids)).all()
+    session.tasks = session_tasks
+
     db.session.commit()

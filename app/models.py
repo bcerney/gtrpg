@@ -19,7 +19,6 @@ class UserCategory(db.Model):
     level_up_xp_modifier = db.Column(db.Integer, default=5)
     xp_to_next_level = db.Column(db.Integer, default=5)
     xp_to_next_level_constant = db.Column(db.Float, default=5.0)
-    
 
     def __repr__(self):
         return f'<UserCategory: user_id={self.user_id}, \

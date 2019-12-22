@@ -1,22 +1,49 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    <table>
-        <tr valign="top">
-            <td>
-                <h1>{{ user.username }}</h1>
-                <h2> Level: {{ user.level }}</h2>
-                <p> Total XP: {{ user.xp }}</p>
-                <p> XP to Next Level: {{ user.xp_to_next_level }}</p>
-                <a href="{{ url_for('main.new_session', username=current_user.username) }}" class="btn btn-info" role="button">New Session</a>
-                {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
-                {% if user.last_seen %}<p>Last seen on: {{ user.last_seen }}</p>{% endif %}
-                {% if user == current_user %}
-                <p><a href="{{ url_for('main.edit_profile') }}">Edit your profile</a></p>
-                {% endif %}
-            </td>
-        </tr>
-    </table>
+    <div class="row">
+        <div class="col-sm-5">
+            <table>
+                <tr valign="top">
+                    <td>
+                        <h1>{{ user.username }}</h1>
+                        <h2> Level: {{ user.level }}</h2>
+                        <h3> Total XP: {{ user.xp }}</h3>
+                        <h3> XP to Next Level: {{ user.xp_to_next_level }}</h3>
+                        <a href="{{ url_for('main.new_session', username=current_user.username) }}" class="btn btn-info" role="button">New Session</a>
+                        {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+                        {% if user.last_seen %}<p>Last seen on: {{ user.last_seen }}</p>{% endif %}
+                        <!-- <p><a href="{{ url_for('main.edit_profile') }}">Edit your profile</a></p> -->
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-sm-7">
+            <table>
+                <tr valign="top">
+                    <td>
+                        <!-- TODO: replace this date formatting/loop hack with real stat processing on session completion -->
+                        <h1>Last Session</h1>
+                        {% if last_session %}
+                        <h3> Completed: {{ last_session.completed.strftime('%b %d, %Y') }}</h3>
+                        <h3> Tasks Completed:</h3> 
+                        <ul>
+                        {% set total_xp = namespace(value=0) %}
+                        {% for task in last_session.tasks %}
+                            <li><p>{{ task.title }} | {{ task.xp }}</p></li>
+                            {% set total_xp.value = total_xp.value + task.xp %}
+                        {% endfor %}
+                        </ul>
+                        <h3>XP Earned: {{ total_xp.value }}</h3>
+                        {% else %}
+                        <h4><i>No completed sessions</i></h4>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
     <hr>
 
     <div class="row" id ="userCategoriesTable">

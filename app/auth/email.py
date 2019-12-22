@@ -1,5 +1,5 @@
 from flask import current_app as app
-from flask import flash, render_template
+from flask import render_template
 
 from app.email import send_email
 
