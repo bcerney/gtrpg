@@ -37,8 +37,12 @@
 
     <div class="row">
         <div class="col-md-4">
+            {% if (new_session_add_task_form.task_id.choices is defined) and new_session_add_task_form.task_id.choices %}
             <h3>Add Task to Session Draft</h3>
             {{ wtf.quick_form(new_session_add_task_form) }}
+            {% else %}
+            <h3>All tasks added!</h3>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
