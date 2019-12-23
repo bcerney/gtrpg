@@ -1,6 +1,6 @@
 from threading import Thread
 
-from flask import current_app as app
+from flask import current_app
 from flask_mail import Message
 
 from app import mail
@@ -12,6 +12,8 @@ def send_async_email(app, msg):
 
 
 def send_email(subject, sender, recipients, text_body, html_body):
+    # https://stackoverflow.com/questions/40326651/flask-mail-sending-email-asynchronously-based-on-flask-cookiecutter
+    app = current_app._get_current_object()
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = text_body
     msg.html = html_body

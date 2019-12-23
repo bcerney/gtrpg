@@ -32,11 +32,11 @@ db.session.commit()
 # Mock email handler to console
 python -m smtpd -n -c DebuggingServer localhost:8025
 
-export MAIL_SERVER=smtp.googlemail.com
-export MAIL_PORT=587
-export MAIL_USE_TLS=1
-export MAIL_USERNAME=<your-gmail-username>
-export MAIL_PASSWORD=<your-gmail-password>
+heroku config:set MAIL_SERVER=smtp.googlemail.com
+heroku config:set MAIL_PORT=587
+heroku config:set MAIL_USE_TLS=1
+heroku config:set MAIL_USERNAME=<your-gmail-username>
+heroku config:set MAIL_PASSWORD=<your-gmail-password>
 
 
 pip freeze > requirements.txt
