@@ -338,24 +338,26 @@ def update_user_xp(user, task):
     debug_flash("user on entry to update_user_xp", user)
 
     if task.xp < user.xp_to_next_level:
-        user.xp = user.xp + task.xp
-        user.xp_to_next_level = user.xp_to_next_level - task.xp
+        user.xp += task.xp
+        user.xp_to_next_level -= task.xp
+
     elif task.xp >= user.xp_to_next_level:
         task_xp = task.xp
 
         while task_xp >= user.xp_to_next_level:
             # Update User
-            user.level = user.level + 1
+            user.level += 1
             flash(f'Level up! {user.username} rose to level {user.level}.')
-            user.xp = user.xp + task_xp
 
-            task_xp = task_xp - user.xp_to_next_level
+            user.xp += user.xp_to_next_level
+            task_xp -= user.xp_to_next_level
+
             user.xp_to_next_level_constant = (user.level_up_xp_modifier * .01 + 1) * user.xp_to_next_level_constant
             user.xp_to_next_level = int(math.ceil(user.xp_to_next_level_constant))
 
         # Account for task_xp remainder
-        user.xp = user.xp + task_xp
-        user.xp_to_next_level = user.xp_to_next_level - task_xp
+        user.xp += task_xp
+        user.xp_to_next_level -= task_xp
 
     debug_flash("user on exit of update_user_xp", user)
 
@@ -365,18 +367,19 @@ def update_user_category_xp(user, category, task):
     user_category = UserCategory.query.filter(UserCategory.user_id == user.id, UserCategory.category_id == category.id).first()
 
     if task.xp < user_category.xp_to_next_level:
-        user_category.xp = user_category.xp + task.xp
-        user_category.xp_to_next_level = user_category.xp_to_next_level - task.xp
+        user_category.xp += task.xp
+        user_category.xp_to_next_level -= task.xp
 
     elif task.xp >= user_category.xp_to_next_level:
         task_xp = task.xp
 
         while task_xp >= user_category.xp_to_next_level:
-            user_category.level = user_category.level + 1
+            user_category.level += 1
             flash(f'Level up! {user.username} rose to level {user_category.level} in category {category.title}.')
-            user_category.xp = user_category.xp + task_xp
 
-            task_xp = task_xp - user_category.xp_to_next_level
+            user_category.xp += user_category.xp_to_next_level
+            task_xp -= user_category.xp_to_next_level
+
             user_category.xp_to_next_level_constant = (user_category.level_up_xp_modifier * .01 + 1) * user_category.xp_to_next_level_constant
             user_category.xp_to_next_level = int(math.ceil(user_category.xp_to_next_level_constant))
 
