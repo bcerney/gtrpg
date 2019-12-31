@@ -43,6 +43,28 @@ def index():
                             user_task_list=user_task_list)
 
 
+@bp.route('/load_default_categories', methods=['GET'])
+@login_required
+def load_default_categories():
+    user = User.query.filter_by(username=current_user.username).first_or_404()
+    duser = get_dumped_user(user)
+
+    user_cat_id_list = []
+    for user_cat in user.user_category:
+        user_cat_id_list.append(user_cat.category_id)
+
+    non_user_cats = Category.query.filter(Category.id.notin_(user_cat_id_list)).all()
+
+    for cat in non_user_cats:
+        user_category = UserCategory(user_id=user.id, category_id=cat.id,
+                                     level=1, xp=0, xp_to_next_level=5, level_up_xp_modifier=5)
+        db.session.add(user_category)
+        
+    db.session.commit()
+
+    return redirect(url_for('main.index'))
+
+
 @bp.route('/user/<username>', methods=['GET'])
 @login_required
 def user(username):
@@ -221,6 +243,7 @@ def edit_profile():
 
 
 @bp.route('/dbview', methods=['GET', 'POST'])
+@login_required
 def db_view():
     users = User.query.all()
     categories = Category.query.order_by('title')
