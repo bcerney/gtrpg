@@ -89,3 +89,15 @@ heroku ps:scale <group-name, ex. web>>=<#-of-dynos>
 
 heroku local web
 
+SELECT * FROM session;
+SELECT * FROM "user";
+
+- Quotes around "user" needed because postgres uses existing table named user
+
+select * from information_schema.tables;
+
+DELETE FROM task WHERE id = 27;
+
+SELECT * FROM session_tasks_atable WHERE task_id = 27;
+
+DELETE FROM session_tasks_atable WHERE task_id = 27;

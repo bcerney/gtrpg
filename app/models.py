@@ -107,7 +107,7 @@ class Category(db.Model):
                   description={self.description}, \
                   tasks={self.tasks}>'
 
-
+#TODO: fix typo
 session_tasks_atable = db.Table('session_tasks_atable',
     db.Column('session_id', db.Integer, db.ForeignKey('session.id')),
     db.Column('task_id', db.Integer, db.ForeignKey('task.id'))
